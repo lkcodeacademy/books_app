@@ -1,0 +1,48 @@
+name: Deploy App
+
+on:
+  # Runs automatically after the Docker image push pipeline succeeds
+  workflow_run:
+    workflows: ["Build and Push Docker Image"]
+    types:
+      - completed
+    branches:
+      - main
+  # Also allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Books App via Ansible
+    runs-on: ubuntu-latest
+    # For workflow_run trigger: only deploy if the upstream job succeeded
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible and Docker collection
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ansible
+          ansible-galaxy collection install community.docker
+
+      - name: Set up SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Inject VM host into inventory
+        run: |
+          sed -i "s/\${VM_HOST}/${{ secrets.VM_HOST }}/g" ansible/inventory.ini
+          sed -i "s/\${VM_USER}/${{ secrets.VM_USER }}/g" ansible/inventory.ini
+
+      - name: Run Ansible deploy playbook
+        working-directory: ansible
+        run: |
+          ansible-playbook deploy-app.yml -i inventory.ini \
+            -e "dockerhub_username=${{ secrets.DOCKERHUB_USERNAME }}" \
+            -e "dockerhub_token=${{ secrets.DOCKERHUB_TOKEN }}" \
+            -e "db_password=${{ secrets.DB_PASSWORD }}"
