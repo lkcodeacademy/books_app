@@ -1,0 +1,76 @@
+name: create infruastructure using terraform
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "feature/mitul-feature"
+
+  push:
+    branches:
+      - main
+      - "feature/mitul-feature"
+    paths:
+      - "terraform/**"
+  workflow_dispatch:
+    inputs:
+      aws_access_key_id:
+        description: "AWS Access Key ID"
+        required: true
+      aws_secret_access_key:
+        description: "AWS Secret Access Key"
+        required: true
+      db_username:
+        description: "Database username"
+        required: true
+      db_password:
+        description: "Database password"
+        required: true
+      action:
+        description: "Action to perform (apply or destory)"
+        required: true
+        default: "apply"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 4.0.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ inputs.aws_access_key_id }}
+          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+          aws-region: us-east-1
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform init
+
+      - name: Terraform Plan
+        run: terraform -chdir=terraform plan \
+          -var="db_username=${{ inputs.db_username }}" \
+          -var="db_password=${{ inputs.db_password }}" \
+          -out=plan.out
+
+      - name: save plan
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-plan
+          path: terraform/plan.out
+
+      - name: Terraform Apply
+        if: ${{ inputs.action == 'apply' }}
+        run: terraform -chdir=terraform apply -auto-approve plan.out
+
+      - name: Terraform destroy
+        if: ${{ inputs.action == 'destroy' }}
+        run: terraform -chdir=terraform destroy -auto-approve \
+          -var="db_username=${{ inputs.db_username }}" \
+          -var="db_password=${{ inputs.db_password }}"
