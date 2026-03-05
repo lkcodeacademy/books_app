@@ -59,7 +59,7 @@ jobs:
           -out=plan.out
 
       - name: save plan
-        uses: actions/upload-artifact@latest
+        uses: actions/upload-artifact@v6
         with:
           name: terraform-plan
           path: terraform/plan.out
