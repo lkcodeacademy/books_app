@@ -9,9 +9,7 @@ on:
   push:
     branches:
       - main
-      - "feature/mitul-feature"
-    paths:
-      - "terraform/**"
+      - mitul-feature
 
   workflow_dispatch:
     inputs:
