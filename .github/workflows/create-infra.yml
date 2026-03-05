@@ -1,10 +1,10 @@
-name: create infruastructure using terraform
+name: create infrastructure using terraform
 
 on:
   pull_request:
     branches:
       - main
-      - "feature/mitul-feature"
+      - mitul-feature
 
   push:
     branches:
@@ -12,6 +12,7 @@ on:
       - "feature/mitul-feature"
     paths:
       - "terraform/**"
+
   workflow_dispatch:
     inputs:
       aws_access_key_id:
@@ -27,7 +28,7 @@ on:
         description: "Database password"
         required: true
       action:
-        description: "Action to perform (apply or destory)"
+        description: "Action to perform (apply or destroy)"
         required: true
         default: "apply"
 
