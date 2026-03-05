@@ -1,16 +1,6 @@
 name: create infrastructure using terraform
 
 on:
-  pull_request:
-    branches:
-      - main
-      - mitul-feature
-
-  push:
-    branches:
-      - main
-      - mitul-feature
-
   workflow_dispatch:
     inputs:
       aws_access_key_id:
@@ -65,11 +55,11 @@ jobs:
           path: terraform/plan.out
 
       - name: Terraform Apply
-        if: ${{ inputs.action == 'apply' }}
+        if: ${{ github.event.inputs.action == 'apply' }}
         run: terraform -chdir=terraform apply -auto-approve plan.out
 
       - name: Terraform destroy
-        if: ${{ inputs.action == 'destroy' }}
+        if: ${{ github.event.inputs.action == 'destroy' }}
         run: terraform -chdir=terraform destroy -auto-approve \
           -var="db_username=${{ inputs.db_username }}" \
           -var="db_password=${{ inputs.db_password }}"
