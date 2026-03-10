@@ -1,21 +1,18 @@
 name: Deploy App
 
 on:
-  # Runs automatically after the Docker image push pipeline succeeds
   workflow_run:
     workflows: ["Build and Push Docker Image"]
     types:
       - completed
     branches:
       - main
-  # Also allow manual trigger from the Actions tab
   workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy Books App via Ansible
     runs-on: ubuntu-latest
-    # For workflow_run trigger: only deploy if the upstream job succeeded
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
