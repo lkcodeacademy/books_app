@@ -7,12 +7,9 @@ on:
       - mitul-feature
   workflow_dispatch:
     inputs:
-      aws_access_key_id:
-        description: "AWS Access Key ID"
-        required: true
-      aws_secret_access_key:
-        description: "AWS Secret Access Key"
-        required: true
+      # AWS credentials are obtained via OIDC and a role assumption.  
+      # Set `AWS_ROLE_ARN` as a repository secret pointing to the
+      # role the job should assume.
       db_username:
         description: "Database username"
         required: true
@@ -23,6 +20,10 @@ on:
         description: "Action to perform (apply or destroy)"
         required: true
         default: "apply"
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   terraform:
@@ -36,11 +37,12 @@ jobs:
         with:
           terraform_version: 1.1.7
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ github.event.inputs.aws_access_key_id }}
-          aws-secret-access-key: ${{ github.event.inputs.aws_secret_access_key }}
+          # `AWS_ROLE_ARN` should point to an IAM role with a trust policy
+          # allowing the GitHub OIDC provider. See repo documentation.
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-central-1
 
       - name: Terraform Init
