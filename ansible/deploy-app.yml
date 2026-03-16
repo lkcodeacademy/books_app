@@ -1,0 +1,7 @@
+---
+- name: Deploy Books App
+  hosts: vm
+  become: true
+
+  roles:
+    - deploy

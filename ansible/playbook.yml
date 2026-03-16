@@ -1,0 +1,8 @@
+---
+- name: Configure VM for Books App
+  hosts: vm
+  become: true
+
+  roles:
+    - common
+    - docker
