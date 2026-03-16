@@ -1,6 +1,6 @@
 ---
 - name: Deploy Books App
-  hosts: vm
+  hosts: all
   become: true
 
   roles:

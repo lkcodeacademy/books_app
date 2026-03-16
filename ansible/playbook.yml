@@ -1,6 +1,6 @@
 ---
 - name: Configure VM for Books App
-  hosts: vm
+  hosts: all
   become: true
 
   roles:
