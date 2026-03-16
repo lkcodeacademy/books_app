@@ -42,10 +42,10 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           # Use printf to handle potential missing trailing newline in secret
-          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           # Show key fingerprint for verification
-          ssh-keygen -l -f ~/.ssh/id_rsa
+          ssh-keygen -l -f ~/.ssh/id_ed25519
 
       - name: Run Ansible playbook
         working-directory: ansible
@@ -53,7 +53,8 @@ jobs:
           VM_HOST: ${{ github.event.inputs.ec2_host || secrets.VM_HOST }}
         run: |
           ansible-playbook playbook.yml \
+            -vvv \
             -i "${VM_HOST}," \
             -e "ansible_user=${{ secrets.VM_USER }}" \
-            -e "ansible_ssh_private_key_file=~/.ssh/id_rsa" \
+            -e "ansible_ssh_private_key_file=$HOME/.ssh/id_ed25519" \
             -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
