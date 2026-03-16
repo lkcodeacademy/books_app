@@ -1,0 +1,44 @@
+name: Configure VM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ansible/**'
+  workflow_dispatch:
+    inputs:
+      ec2_host:
+        description: 'EC2 Public IP or hostname'
+        required: false
+
+jobs:
+  configure-vm:
+    name: Run Ansible Playbook
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ansible
+
+      - name: Set up SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Inject VM host into inventory
+        run: |
+          VM_HOST="${{ github.event.inputs.ec2_host || secrets.VM_HOST }}"
+          sed -i "s/\${VM_HOST}/$VM_HOST/g" ansible/inventory.ini
+          sed -i "s/\${VM_USER}/${{ secrets.VM_USER }}/g" ansible/inventory.ini
+
+      - name: Run Ansible playbook
+        working-directory: ansible
+        run: |
+          ansible-playbook playbook.yml -i inventory.ini
