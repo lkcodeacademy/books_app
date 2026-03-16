@@ -141,7 +141,7 @@ data "aws_iam_role" "github_actions" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
-  public_key = var.public_key
+  public_key = trimspace(var.public_key)
 }
 
 
