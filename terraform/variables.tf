@@ -9,3 +9,8 @@ variable "db_password" {
   type        = string
   sensitive = true 
 }
+
+variable "github_repo" {
+  description = "GitHub repository identifier (owner/repo) for OIDC trust policy"
+  type        = string
+}

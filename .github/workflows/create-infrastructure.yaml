@@ -7,9 +7,6 @@ on:
       - mitul-feature
   workflow_dispatch:
     inputs:
-      # AWS credentials are obtained via OIDC and a role assumption.  
-      # Set `AWS_ROLE_ARN` as a repository secret pointing to the
-      # role the job should assume.
       db_username:
         description: "Database username"
         required: true
@@ -40,8 +37,6 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          # `AWS_ROLE_ARN` should point to an IAM role with a trust policy
-          # allowing the GitHub OIDC provider. See repo documentation.
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-central-1
 
@@ -49,7 +44,7 @@ jobs:
         run: terraform -chdir=terraform init
 
       - name: Terraform Plan
-        run: terraform -chdir=terraform plan -var="db_username=${{ github.event.inputs.db_username }}" -var="db_password=${{ github.event.inputs.db_password }}" -out=plan.out
+        run: terraform -chdir=terraform plan -var="db_username=${{ github.event.inputs.db_username }}" -var="db_password=${{ github.event.inputs.db_password }}" -var="github_repo=${{ github.repository }}" -out=plan.out
 
       - name: save plan
         uses: actions/upload-artifact@v6
@@ -63,4 +58,4 @@ jobs:
 
       - name: Terraform destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform -chdir=terraform destroy -auto-approve -var="db_username=${{ github.event.inputs.db_username }}" -var="db_password=${{ github.event.inputs.db_password }}"
+        run: terraform -chdir=terraform destroy -auto-approve -var="db_username=${{ github.event.inputs.db_username }}" -var="db_password=${{ github.event.inputs.db_password }}" -var="github_repo=${{ github.repository }}"
