@@ -3,12 +3,6 @@ name: create infrastructure using terraform
 on:
   workflow_dispatch:
     inputs:
-      db_username:
-        description: "Database username"
-        required: true
-      db_password:
-        description: "Database password"
-        required: true
       action:
         description: "Action to perform (apply or destroy)"
         required: true
@@ -40,7 +34,7 @@ jobs:
         run: terraform -chdir=terraform init
 
       - name: Terraform Plan
-        run: terraform -chdir=terraform plan -var="db_username=${{ github.event.inputs.db_username }}" -var="db_password=${{ github.event.inputs.db_password }}" -var="github_repo=${{ github.repository }}" -out=plan.out
+        run: terraform -chdir=terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="github_repo=${{ github.repository }}" -out=plan.out
 
       - name: save plan
         uses: actions/upload-artifact@v6
@@ -81,4 +75,4 @@ jobs:
 
       - name: Terraform destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform -chdir=terraform destroy -auto-approve -var="db_username=${{ github.event.inputs.db_username }}" -var="db_password=${{ github.event.inputs.db_password }}" -var="github_repo=${{ github.repository }}"
+        run: terraform -chdir=terraform destroy -auto-approve -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="github_repo=${{ github.repository }}"
