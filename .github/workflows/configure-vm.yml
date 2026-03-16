@@ -21,11 +21,31 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y ansible
 
+      - name: Check Secrets Integrity
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "::error::SSH_PRIVATE_KEY secret is MISSING or EMPTY!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VM_USER }}" ]; then
+            echo "::error::VM_USER secret is MISSING or EMPTY!"
+            exit 1
+          fi
+          echo "VM_USER is set to: ${{ secrets.VM_USER }}"
+          KEY_LEN=$(echo -n "${{ secrets.SSH_PRIVATE_KEY }}" | wc -c)
+          echo "Private Key Length: $KEY_LEN characters"
+          echo -n "Key Prefix: "
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 1
+          
       - name: Set up SSH private key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          # Use printf to handle potential missing trailing newline in secret
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          # Show key fingerprint for verification
+          ssh-keygen -l -f ~/.ssh/id_rsa
 
       - name: Run Ansible playbook
         working-directory: ansible
