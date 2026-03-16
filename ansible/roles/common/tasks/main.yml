@@ -1,11 +1,16 @@
----
-- name: Update apt cache and upgrade all packages
+- name: Update package cache and upgrade (Debian)
   ansible.builtin.apt:
     update_cache: yes
     upgrade: dist
     cache_valid_time: 3600
+  when: ansible_os_family == 'Debian'
 
-- name: Install essential packages
+- name: Update package cache and upgrade (RedHat)
+  ansible.builtin.dnf:
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'
+
+- name: Install essential packages (Debian)
   ansible.builtin.apt:
     name:
       - curl
@@ -14,6 +19,15 @@
       - python3-pip
       - ca-certificates
       - gnupg
-      - lsb-release
-      - apt-transport-https
     state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Install essential packages (RedHat)
+  ansible.builtin.dnf:
+    name:
+      - curl
+      - git
+      - unzip
+      - python3-pip
+    state: present
+  when: ansible_os_family == 'RedHat'
