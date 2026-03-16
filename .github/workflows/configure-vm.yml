@@ -41,20 +41,27 @@ jobs:
       - name: Set up SSH private key
         run: |
           mkdir -p ~/.ssh
-          # Use printf to handle potential missing trailing newline in secret
           printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          # Show key fingerprint for verification
           ssh-keygen -l -f ~/.ssh/id_ed25519
+
+      - name: Verify Raw SSH Connectivity
+        env:
+          VM_HOST: ${{ github.event.inputs.ec2_host || secrets.VM_HOST }}
+        run: |
+          echo "Testing direct SSH connection to $VM_HOST as ec2-user..."
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ec2-user@$VM_HOST "echo 'Direct SSH Successful!'"
 
       - name: Run Ansible playbook
         working-directory: ansible
         env:
           VM_HOST: ${{ github.event.inputs.ec2_host || secrets.VM_HOST }}
+          ANSIBLE_REMOTE_USER: ec2-user
+          ANSIBLE_PRIVATE_KEY_FILE: /home/runner/.ssh/id_ed25519
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          SSH_AUTH_SOCK: ""
         run: |
           ansible-playbook playbook.yml \
             -vvv \
             -i "${VM_HOST}," \
-            -e "ansible_user=ec2-user" \
-            -e "ansible_ssh_private_key_file=$HOME/.ssh/id_ed25519" \
-            -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
+            -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'"
