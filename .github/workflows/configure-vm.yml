@@ -1,6 +1,9 @@
 name: Configure VM
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       ec2_host:
