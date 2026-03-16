@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ansible-create-vm
     paths:
       - 'ansible/**'
   workflow_dispatch:
