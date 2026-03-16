@@ -59,6 +59,7 @@ resource "aws_instance" "app" {
   instance_type = "t3.micro"
   subnet_id = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  key_name = aws_key_pair.deployer.key_name
   
   user_data = <<-EOF
                 #!/bin/bash
@@ -136,6 +137,11 @@ data "aws_iam_openid_connect_provider" "github" {
 # Role assumed by GitHub Actions when running terraform.
 data "aws_iam_role" "github_actions" {
   name = "github-actions-terraform"
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = var.public_key
 }
 
 

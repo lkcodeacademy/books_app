@@ -14,3 +14,8 @@ variable "github_repo" {
   description = "GitHub repository identifier (owner/repo) for OIDC trust policy"
   type        = string
 }
+
+variable "public_key" {
+  description = "The public key for SSH access to the EC2 instance"
+  type        = string
+}
