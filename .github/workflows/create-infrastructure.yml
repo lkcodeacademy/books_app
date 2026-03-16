@@ -3,8 +3,7 @@ name: create infrastructure using terraform
 on:
   push:
     branches:
-      - main
-      - mitul-feature
+      - ansible-create-vm
   workflow_dispatch:
     inputs:
       db_username:
