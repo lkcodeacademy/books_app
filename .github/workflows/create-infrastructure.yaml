@@ -73,7 +73,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'configure-vm.yml',
-              ref: 'ansible-configure-vm',
+              ref: 'main',
               inputs: {
                 ec2_host: '${{ steps.terraform_output.outputs.ec2_ip }}'
               }

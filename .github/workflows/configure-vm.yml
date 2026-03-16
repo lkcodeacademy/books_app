@@ -1,14 +1,11 @@
 name: Configure VM
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       ec2_host:
         description: "EC2 public IP address (passed from create-infrastructure)"
-        required: false
+        required: true
 
 jobs:
   configure-vm:
