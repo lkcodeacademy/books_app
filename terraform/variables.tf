@@ -18,4 +18,8 @@ variable "github_repo" {
 variable "public_key" {
   description = "The public key for SSH access to the EC2 instance"
   type        = string
+  validation {
+    condition     = length(var.public_key) > 0
+    error_message = "The public_key variable must not be empty. Check if the SSH_PUBLIC_KEY secret is set in GitHub."
+  }
 }

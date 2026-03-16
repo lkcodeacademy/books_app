@@ -25,6 +25,13 @@ jobs:
         with:
           terraform_version: 1.1.7
 
+      - name: Check Secrets
+        run: |
+          if [ -z "${{ secrets.SSH_PUBLIC_KEY }}" ]; then
+            echo "Error: SSH_PUBLIC_KEY secret is not set!"
+            exit 1
+          fi
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
