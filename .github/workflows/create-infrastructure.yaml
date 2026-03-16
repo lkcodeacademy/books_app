@@ -25,11 +25,21 @@ jobs:
         with:
           terraform_version: 1.1.7
 
-      - name: Check Secrets
+      - name: Check Secrets Integrity
+        shell: bash
         run: |
           if [ -z "${{ secrets.SSH_PUBLIC_KEY }}" ]; then
-            echo "Error: SSH_PUBLIC_KEY secret is not set!"
+            echo "::error::SSH_PUBLIC_KEY secret is MISSING or EMPTY!"
             exit 1
+          fi
+          KEY_LEN=$(echo -n "${{ secrets.SSH_PUBLIC_KEY }}" | wc -c)
+          echo "Public Key Length: $KEY_LEN characters"
+          # Print the first 10 characters to verify format (e.g. ssh-ed2551...)
+          echo -n "Key Prefix: "
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" | cut -c 1-12
+          
+          if [[ ! "${{ secrets.SSH_PUBLIC_KEY }}" =~ ^ssh- ]]; then
+            echo "::warning::Public key does not start with 'ssh-'. Please check your secret formatting."
           fi
 
       - name: Configure AWS credentials (OIDC)

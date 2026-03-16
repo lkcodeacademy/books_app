@@ -60,12 +60,19 @@ resource "aws_instance" "app" {
   subnet_id = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   key_name = aws_key_pair.deployer.key_name
+  user_data_replace_on_change = true
   
   user_data = <<-EOF
                 #!/bin/bash
                 sudo apt update -y
-                sudo install -y docker.io docker-compose
+                sudo apt install -y docker.io docker-compose
                 sudo systemctl start docker
+                
+                # Fallback for SSH key injection
+                mkdir -p /home/ubuntu/.ssh
+                echo "${trimspace(var.public_key)}" >> /home/ubuntu/.ssh/authorized_keys
+                chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
+                chmod 600 /home/ubuntu/.ssh/authorized_keys
                 EOF
 
   tags = {
