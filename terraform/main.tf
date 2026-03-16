@@ -95,16 +95,9 @@ resource "aws_ecr_repository" "backend" {
   name = "backend"  
 }
 
-# OIDC provider for GitHub Actions.  This enables the workflow to
-# assume roles without AWS access keys.
-resource "aws_iam_openid_connect_provider" "github" {
+# Look up the existing OIDC provider for GitHub Actions.
+data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
-  thumbprint_list = [
-    # GitHub's OIDC provider certificate thumbprint (as of 2023).
-    # Update if AWS reports a mismatch.
-    "6938fd4d98bab03faadb97b34396831e3780aea1"
-  ]
 }
 
 # Role assumed by GitHub Actions when running terraform.
@@ -116,7 +109,7 @@ resource "aws_iam_role" "github_actions" {
       {
         Effect = "Allow",
         Principal = {
-          Federated = aws_iam_openid_connect_provider.github.arn
+          Federated = data.aws_iam_openid_connect_provider.github.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
