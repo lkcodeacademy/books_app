@@ -2,6 +2,8 @@ name: Build & Push Docker Images
 
 on:
     push:
+        branches:
+            - docker-image-to-docker-hu
         paths:
             - "frontend/**"
             - "backend/**"
