@@ -37,7 +37,7 @@ jobs:
         run: terraform -chdir=terraform plan -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="github_repo=${{ github.repository }}" -out=plan.out
 
       - name: save plan
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
           path: terraform/plan.out
