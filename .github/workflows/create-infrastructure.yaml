@@ -3,7 +3,6 @@ name: create infrastructure using terraform
 on:
   push:
     branches:
-      - main
       - mitul-feature
   workflow_dispatch:
     inputs:
