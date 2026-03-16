@@ -2,22 +2,6 @@ resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
 
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
-}
-
 resource "aws_subnet" "public" {
   vpc_id = aws_vpc.main.id
   cidr_block = "10.0.1.0/24"
@@ -71,7 +55,7 @@ resource "aws_subnet" "private2" {
 }
 
 resource "aws_instance" "app" {
-  ami = data.aws_ami.ubuntu.id
+  ami = "ami-0c42fad2ea005202d"
   instance_type = "t3.micro"
   subnet_id = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
@@ -81,16 +65,15 @@ resource "aws_instance" "app" {
   user_data = <<-EOF
                 #!/bin/bash
                 set -e
-                export DEBIAN_FRONTEND=noninteractive
                 
-                # Update and install Docker
-                apt-get update -y
-                apt-get install -y docker.io docker-compose
+                # Update and install Docker using dnf (Amazon Linux)
+                dnf update -y
+                dnf install -y docker
                 systemctl start docker
                 systemctl enable docker
                 
-                # Robust SSH key injection for ubuntu user
-                TARGET_USER="ubuntu"
+                # Robust SSH key injection for ec2-user
+                TARGET_USER="ec2-user"
                 USER_HOME="/home/$TARGET_USER"
                 mkdir -p "$USER_HOME/.ssh"
                 echo "${trimspace(var.public_key)}" >> "$USER_HOME/.ssh/authorized_keys"
