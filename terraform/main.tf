@@ -83,8 +83,7 @@ resource "aws_db_instance" "db" {
   password = var.db_password
   parameter_group_name = "default.mysql8.0"
   db_subnet_group_name = aws_db_subnet_group.default.name
-  skip_final_snapshot = false
-final_snapshot_identifier = "final-snapshot"
+  skip_final_snapshot = true
   publicly_accessible = false
 }
 
