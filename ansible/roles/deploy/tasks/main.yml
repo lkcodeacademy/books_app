@@ -37,6 +37,16 @@
   community.docker.docker_login:
     username: "{{ docker_username }}"
     password: "{{ docker_token }}"
+    
+- name: Stop current stack
+  command: docker compose -f "{{ app_dir }}/docker-compose.yml" down
+  args:
+    chdir: "{{ app_dir }}"
+  ignore_errors: yes
+
+- name: Remove old database volume (so init scripts run again)
+  command: docker volume rm -f {{ app_dir | basename }}_db_data
+  ignore_errors: yes
 
 - name: Pull latest images from Docker Hub
   community.docker.docker_compose_v2:
