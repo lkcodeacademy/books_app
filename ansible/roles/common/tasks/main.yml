@@ -3,17 +3,17 @@
     update_cache: yes
     upgrade: dist
     cache_valid_time: 3600
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
 
 - name: Update package cache and upgrade (RedHat)
   ansible.builtin.dnf:
     update_cache: yes
-  when: ansible_os_family == 'RedHat'
+  when: ansible_facts['os_family'] == 'RedHat'
 
 - name: Install essential packages (Debian)
   ansible.builtin.apt:
     name:
-      - curl
+      - curl-minimal
       - git
       - unzip
       - python3-pip
@@ -25,7 +25,7 @@
 - name: Install essential packages (RedHat)
   ansible.builtin.dnf:
     name:
-      - curl
+      - curl-minimal
       - git
       - unzip
       - python3-pip
