@@ -2,23 +2,29 @@
   ansible.builtin.dnf:
     name:
       - docker
-      - docker-compose-plugin
     state: present
-  when: ansible_os_family == 'RedHat'
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Install Docker Compose (RedHat)
+  ansible.builtin.get_url:
+    url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+  when: ansible_facts['os_family'] == 'RedHat'
 
 - name: Create Docker keyring directory (Debian)
   ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
 
 - name: Download Docker's official GPG key (Debian)
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
     dest: /etc/apt/keyrings/docker.asc
     mode: '0444'
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
 
 - name: Add Docker apt repository (Debian)
   ansible.builtin.apt_repository:
@@ -28,7 +34,7 @@
       {{ ansible_distribution_release }} stable
     state: present
     filename: docker
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
 
 - name: Install Docker Engine (Debian)
   ansible.builtin.apt:
@@ -40,7 +46,7 @@
       - docker-compose-plugin
     state: present
     update_cache: yes
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
 
 - name: Enable and start Docker service
   ansible.builtin.systemd:
