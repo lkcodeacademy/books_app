@@ -3,14 +3,21 @@
     name:
       - docker
     state: present
-  when: ansible_facts['os_family'] == 'RedHat'
+  when: ansible_os_family == 'RedHat'
 
-- name: Install Docker Compose (RedHat)
-  ansible.builtin.get_url:
-    url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
-    dest: /usr/local/bin/docker-compose
+- name: Create Docker CLI plugins directory (RedHat)
+  ansible.builtin.file:
+    path: /usr/libexec/docker/cli-plugins
+    state: directory
     mode: '0755'
-  when: ansible_facts['os_family'] == 'RedHat'
+  when: ansible_os_family == 'RedHat'
+
+- name: Download Docker Compose V2 (RedHat)
+  ansible.builtin.get_url:
+    url: https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64
+    dest: /usr/libexec/docker/cli-plugins/docker-compose
+    mode: '0755'
+  when: ansible_os_family == 'RedHat'
 
 - name: Create Docker keyring directory (Debian)
   ansible.builtin.file:
