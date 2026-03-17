@@ -22,13 +22,13 @@
     group: "{{ ansible_user }}"
     mode: '0600'
     content: |
-      DOCKERHUB_USERNAME={{ dockerhub_username }}
+      DOCKERHUB_USERNAME={{ docker_username }}
       DB_PASSWORD={{ db_password }}
 
 - name: Log in to Docker Hub
   community.docker.docker_login:
-    username: "{{ dockerhub_username }}"
-    password: "{{ dockerhub_token }}"
+    username: "{{ docker_username }}"
+    password: "{{ docker_token }}"
 
 - name: Pull latest images from Docker Hub
   community.docker.docker_compose_v2:

@@ -1,0 +1,46 @@
+name: Deploy Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      ec2_host:
+        description: "EC2 public IP address"
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible and dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ansible python3-jmespath
+          ansible-galaxy collection install community.docker
+
+      - name: Set up SSH private key
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | sed 's/[[:space:]]*$//' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519
+
+      - name: Run Ansible deployment
+        working-directory: ansible
+        env:
+          VM_HOST: ${{ github.event.inputs.ec2_host }}
+          ANSIBLE_REMOTE_USER: ec2-user
+          ANSIBLE_PRIVATE_KEY_FILE: /home/runner/.ssh/id_ed25519
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          SSH_AUTH_SOCK: ""
+        run: |
+          ansible-playbook deploy-app.yml \
+            -i "${VM_HOST}," \
+            -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes'" \
+            -e "docker_username=${{ secrets.DOCKER_USERNAME }}" \
+            -e "docker_token=${{ secrets.DOCKER_TOKEN }}" \
+            -e "db_password=${{ secrets.DB_PASSWORD }}"
