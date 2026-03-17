@@ -7,6 +7,10 @@ on:
         description: "EC2 public IP address"
         required: true
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   deploy:
     name: Deploy to EC2

@@ -7,6 +7,10 @@ on:
         description: "EC2 public IP address (passed from create-infrastructure)"
         required: true
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   configure-vm:
     name: Run Ansible Playbook
@@ -74,3 +78,22 @@ jobs:
             -vvv \
             -i "${VM_HOST}," \
             -e "ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes'"
+
+      - name: Trigger Deploy App workflow
+        uses: actions/github-script@v7
+        env:
+          EC2_IP: ${{ github.event.inputs.ec2_host || secrets.VM_HOST }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const ec2Host = process.env.EC2_IP;
+            console.log(`Triggering deploy-app with EC2 host: ${ec2Host}`);
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-app.yml',
+              ref: 'main',
+              inputs: {
+                ec2_host: ec2Host
+              }
+            });
